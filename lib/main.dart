@@ -1,0 +1,42 @@
+// this file is a simple test setup to verify that the sqlite database works
+// it inserts, reads, updates, and deletes sample transactions using dbhelper
+// used to test storage functionality
+
+import 'services/db_helper.dart';
+import 'models/transaction_model.dart';
+
+void main() async {
+  // create an instance of the database helper
+  final db = DBHelper();
+
+  // insert a sample transaction into the database
+  // this will add one new record into the transactions table
+  await db.insertTransaction(TransactionModel(
+    amount: 25.5,
+    category: 'Food',
+    date: '2025-11-04',
+    note: 'Lunch',
+  ));
+
+  // fetch all transactions from the database
+  // this reads every row and returns them as a list of transactionmodel objects
+  var list = await db.getTransactions();
+  print('Transactions: ${list.map((t) => t.toMap())}');
+
+  // if there are any transactions, update the first one
+  // this changes the first transaction’s amount and note
+  if (list.isNotEmpty) {
+    var first = list.first;
+    await db.updateTransaction(TransactionModel(
+      id: first.id,
+      amount: 30.0, // new amount after update
+      category: first.category,
+      date: first.date,
+      note: 'Updated Lunch',
+    ));
+  }
+
+  // if there are still transactions, delete the first one
+  // this permanently removes that record from the database
+  if (list.isNotEmpty) await db.deleteTransaction(list.first.id!);
+}
