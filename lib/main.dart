@@ -5,7 +5,17 @@
 import 'services/db_helper.dart';
 import 'models/transaction_model.dart';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 void main() async {
+  // Platform specfic DB initialization
+  if (defaultTargetPlatform == TargetPlatform.linux)
+  {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
   // create an instance of the database helper
   final db = DBHelper();
 
