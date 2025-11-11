@@ -14,9 +14,13 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
   final DBHelper _dbHelper = DBHelper();
   List<TransactionModel> _transactions = [];
 
-  final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
+
+  String? _selectCategory; //in order to select category from picker
+  DateTime? _selectDate; // in order to select date from picker
+  double? _enterAmount; // in order to store amount entered from dialog
+
+  final List<String> _categories = ['Food','Shopping','Utilities','Transportation','Other']; // used in category picker
 
   @override
   void initState() {
@@ -32,17 +36,18 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
   }
 
   Future<void> _addTransaction() async {
-    final category = _categoryController.text.trim();
     final note = _noteController.text.trim();
-    final amountText = _amountController.text.trim();
+    // using selected values from pickers and dialog
+    final category = _selectCategory;
+    final amount = _enterAmount ?? 0.0;
+    final date = _selectDate ?? DateTime.now();
 
-    if (category.isEmpty || amountText.isEmpty) return;
-
-    final amount = double.tryParse(amountText) ?? 0.0;
+    // if category or amount is invalid, do nothing
+    if (category == null || category.isEmpty || amount <= 0) return;
 
     final newTransaction = TransactionModel(
       category: category,
-      date: DateTime.now().toString(),
+      date: date.toString(), // user can select an actual date instead of saving current date
       note: note,
       amount: amount,
     );
@@ -50,9 +55,14 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
     try {
       await _dbHelper.insertTransaction(newTransaction);
 
-      _categoryController.clear();
-      _noteController.clear();
-      _amountController.clear();
+      _noteController.clear(); // only clear note field
+
+      // reset the selected values
+      setState(() {
+        _selectCategory = null;
+        _enterAmount = null;
+        _selectDate = null;
+      });
 
       _loadTransact();
 
@@ -71,7 +81,6 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,35 +98,138 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                 'Add a New Transaction',
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
-              //code for each input type
+              //code for each input type (changed to pickers and dialog)
               const SizedBox(height: 10),
-              TextField(
-                controller: _categoryController,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                ),
+
+              // create category picker using dropdown
+              Row(
+                children: [
+                  const Text('Category: '),
+                  DropdownButton<String>(
+                    value: _selectCategory,
+                    hint: const Text('Select'),
+                    items: _categories
+                    // to create dropdown items from the categories list
+                        .map((category) => DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    ))
+                        .toList(),
+                    // when user selects a category from dropdown
+                    onChanged: (value) {
+                      setState(() {
+                        _selectCategory = value;
+                      });
+                    },
+                  ),
+                ],
               ),
+
               const SizedBox(height: 10),
+
+              // create date picker
+              Row(
+                children: [
+                  const Text('Date: '),
+                  TextButton(
+                    onPressed: () async {
+                      // open date picker from flutter library
+                      final chosenDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2004),
+                        lastDate: DateTime(2100),
+                      );
+                      // if user selected a date, save it
+                      if (chosenDate != null) {
+                        setState(() {
+                          _selectDate = chosenDate;
+                        });
+                      }
+                    },
+                    // display the selected date or prompt to choose one
+                    child: Text(
+                      _selectDate == null
+                          ? 'Select Date'
+                          : _selectDate!.toString().split(' ')[0],
+                    ),
+                  ),
+                ],
+              ),
+
+
+              const SizedBox(height: 10),
+
+              // keep note so user can enter in any text
               TextField(
                 controller: _noteController,
                 decoration: const InputDecoration(
                   labelText: 'Note',
                 ),
               ),
+
               const SizedBox(height: 10),
-              TextField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
-                ),
-                keyboardType: TextInputType.number,
+
+              // create amount input dialog
+              Row(
+                children: [
+                  const Text('Amount: '),
+                  TextButton(
+                    onPressed: () async {
+                      final controller = TextEditingController();
+
+                      // show dialog to enter an amount
+                      final result = await showDialog<double>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Enter Amount '),
+                            content: TextField(
+                              controller: controller,
+                              keyboardType: TextInputType.number,
+                              decoration:
+                              const InputDecoration(labelText: 'Amount'),
+                            ),
+                            // save button to return the entered amount
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(
+                                    context,
+                                    double.tryParse(controller.text) ?? 0.0,
+                                  );
+                                },
+                                child: const Text('Save'), // display "Save" button
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      // if user entered a valid amount then update it
+                      if (result != null) {
+                        setState(() {
+                          _enterAmount = result;
+                        });
+                      }
+                    },
+                    // display the entered amount or prompt user to enter one
+                    child: Text(
+                      _enterAmount == null
+                          ? 'Enter Amount'
+                          : '\$${_enterAmount!.toStringAsFixed(2)}',
+                    ),
+                  ),
+                ],
               ),
+
+
               const SizedBox(height: 20),
               //button to save transaction
               ElevatedButton(
                 onPressed: _addTransaction,
                 child: const Text('Save Transaction'),
               ),
+
               const SizedBox(height: 20),
               const Divider(),
               const Text(
@@ -125,6 +237,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
+
               //code for the saved transactions
               ListView.builder(
                 shrinkWrap: true,
