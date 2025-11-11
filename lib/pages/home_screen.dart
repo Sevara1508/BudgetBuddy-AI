@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import '/models/transaction_model.dart';
 import '/services/db_helper.dart';
 import 'transaction_screen.dart'; // import your screen here
@@ -15,11 +17,43 @@ class _Home_ScreenState extends State<Home_Screen> {
   final DBHelper _dbHelper = DBHelper();
   List<TransactionModel> _transactions = [];
 
+  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+
+
   @override
   void initState() {
     super.initState();
+    _initializeNotifications();
     _loadTransact();
   }
+
+  Future<void> _initializeNotifications() async {
+    const LinuxInitializationSettings linuxInitSettings = LinuxInitializationSettings(defaultActionName: "Open");
+
+    const InitializationSettings initSettings = InitializationSettings(
+      linux: linuxInitSettings
+      );
+
+    await _notificationsPlugin.initialize(initSettings);
+  }
+
+  Future<void> _showTransactionsNotification() async {
+    if (_transactions.isEmpty) return null;
+    final latest = _transactions.last;
+
+    await _notificationsPlugin.show(
+      0,
+      "New Transaction Added",
+      "${latest.category}: \$${latest.amount.toStringAsFixed(2)}",
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          "transactions",
+          "Transactions"
+          )
+      )
+      );
+  }
+
 
   // Method to initialize and create the database
   Future<void> _loadTransact() async {
@@ -79,6 +113,8 @@ class _Home_ScreenState extends State<Home_Screen> {
               const Transaction_Screen(title: 'Transactions'),
             ),
           );
+          _loadTransact();
+          _showTransactionsNotification();
         },
         child: const Icon(Icons.pages), //add icon for navigating to another page
       ),
