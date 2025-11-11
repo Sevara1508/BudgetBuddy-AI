@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/models/transaction_model.dart';
 import '/services/db_helper.dart';
+import 'transaction_screen.dart'; // import your screen here
 
 class Home_Screen extends StatefulWidget {
   const Home_Screen({super.key, required this.title});
@@ -33,34 +34,53 @@ class _Home_ScreenState extends State<Home_Screen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .onInverseSurface,
         title: Text(widget.title), //this can be image, icon or multiline text
       ),
       body: Container(
-        height: 100,  // Limiting the height to make it look like a row
+        height: 100, // Limiting the height to make it look like a row
         child: ListView.builder(
-          scrollDirection: Axis.horizontal,  // Scroll horizontally
+          scrollDirection: Axis.horizontal, // Scroll horizontally
           itemCount: _transactions.length,
           itemBuilder: (context, index) {
             final t = _transactions[index];
             return Container(
               width: 500.0,
               color: Colors.lightBlueAccent,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(t.category, style: const TextStyle(fontWeight: FontWeight.bold)), //for category
-                  Text(t.note ?? ''), //outputs the note from db
-                  Text('\$${t.amount.toStringAsFixed(2)}'),//for price with two decimals
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.category,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    //for category
+                    Text(t.note ?? ''),
+                    //outputs the note from db
+                    Text('\$${t.amount.toStringAsFixed(2)}'),
+                    //for price with two decimals
+                  ],
+                ),
               ),
-            ),
-
             );
           },
         ),
+      ),
+      //inspired from lecture code
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+              const Transaction_Screen(title: 'Transactions'),
+            ),
+          );
+        },
+        child: const Icon(Icons.pages), //add icon for navigating to another page
       ),
     );
   }
