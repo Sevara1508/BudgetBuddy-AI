@@ -56,8 +56,16 @@ void main() async {
 
 import 'package:flutter/material.dart';
 import 'pages/home_screen.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-void main(){
+void main() async {
+  // Platform specfic DB initialization
+  if (defaultTargetPlatform == TargetPlatform.linux)
+  {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
   runApp(const MyApp());
 }
 

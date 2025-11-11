@@ -86,28 +86,4 @@ class DBHelper {
       whereArgs: [id],
     );
   }
-
-  /*
-  UNCOMMENT WHEN UI IS READY
-
-  void _showSuccessSnackbar(String message) {
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text(message),
-    //     backgroundColor: Colors.green,
-    //   ),
-    // );
-    print('SUCCESS: $message');
-  }
-
-  void _showErrorSnackbar(String message) {
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text(message),
-    //     backgroundColor: Colors.red,
-    //   ),
-    // );
-    print('ERROR: $message');
-  }
-  */
 }

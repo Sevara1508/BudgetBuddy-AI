@@ -47,13 +47,29 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
       amount: amount,
     );
 
-    await _dbHelper.insertTransaction(newTransaction);
+    try {
+      await _dbHelper.insertTransaction(newTransaction);
 
-    _categoryController.clear();
-    _noteController.clear();
-    _amountController.clear();
+      _categoryController.clear();
+      _noteController.clear();
+      _amountController.clear();
 
-    _loadTransact();
+      _loadTransact();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Transaction added!"),
+          backgroundColor: Colors.green,
+          ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Failed to add transaction!"),
+          backgroundColor: Colors.red,
+          ),
+      );
+    }
   }
 
   @override
