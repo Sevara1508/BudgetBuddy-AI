@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'settings_screen.dart';
 
 import '/models/transaction_model.dart';
 import '/services/db_helper.dart';
 import 'transaction_screen.dart'; // import your screen here
 
+
 class Home_Screen extends StatefulWidget {
-  const Home_Screen({super.key, required this.title});
   final String title;
+  final bool isDarkMode;
+  final Function(bool) onToggleTheme;
+
+  const Home_Screen({
+    super.key,
+    required this.title,
+    required this.isDarkMode,
+    required this.onToggleTheme,
+  });
 
   @override
   State<Home_Screen> createState() => _Home_ScreenState();
 }
+
 
 class _Home_ScreenState extends State<Home_Screen> {
   final DBHelper _dbHelper = DBHelper();
   List<TransactionModel> _transactions = [];
 
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
+
 
   @override
   void initState() {
@@ -27,6 +39,7 @@ class _Home_ScreenState extends State<Home_Screen> {
   }
 
   Future<void> _initializeNotifications() async {
+
     const AndroidInitializationSettings andriodInitSettings = AndroidInitializationSettings("app_icon");
     const LinuxInitializationSettings linuxInitSettings = LinuxInitializationSettings(defaultActionName: "Open");
 
@@ -39,7 +52,7 @@ class _Home_ScreenState extends State<Home_Screen> {
   }
 
   Future<void> _showTransactionsNotification() async {
-    if (_transactions.isEmpty) return null;
+    if (_transactions.isEmpty) return;
     final latest = _transactions.last;
 
     await _notificationsPlugin.show(
@@ -49,16 +62,16 @@ class _Home_ScreenState extends State<Home_Screen> {
       NotificationDetails(
         android: AndroidNotificationDetails(
           "transactions",
-          "Transactions"
-          )
-      )
-      );
+          "Transactions",
+        ),
+        iOS: DarwinNotificationDetails(),
+        macOS: DarwinNotificationDetails(),
+      ),
+    );
   }
 
 
-  // Method to initialize and create the database
   Future<void> _loadTransact() async {
-    // Getting the path to store the database file
     var transactions = await _dbHelper.getTransactions();
     setState(() {
       _transactions = transactions;
@@ -69,16 +82,32 @@ class _Home_ScreenState extends State<Home_Screen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme
-            .of(context)
-            .colorScheme
-            .onInverseSurface,
-        title: Text(widget.title), //this can be image, icon or multiline text
+        backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
+        title: Text(widget.title),
+
+        //ADDED SETTINGS BUTTON HERE
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SettingsScreen(
+                    isDarkMode: widget.isDarkMode,
+                    onToggleTheme: widget.onToggleTheme,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
+
       body: Container(
-        height: 100, // Limiting the height to make it look like a row
+        height: 100,
         child: ListView.builder(
-          scrollDirection: Axis.horizontal, // Scroll horizontally
+          scrollDirection: Axis.horizontal,
           itemCount: _transactions.length,
           itemBuilder: (context, index) {
             final t = _transactions[index];
@@ -92,11 +121,8 @@ class _Home_ScreenState extends State<Home_Screen> {
                   children: [
                     Text(t.category,
                         style: const TextStyle(fontWeight: FontWeight.bold)),
-                    //for category
                     Text(t.note ?? ''),
-                    //outputs the note from db
                     Text('\$${t.amount.toStringAsFixed(2)}'),
-                    //for price with two decimals
                   ],
                 ),
               ),
@@ -104,7 +130,7 @@ class _Home_ScreenState extends State<Home_Screen> {
           },
         ),
       ),
-      //inspired from lecture code
+
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
@@ -117,7 +143,7 @@ class _Home_ScreenState extends State<Home_Screen> {
           await _loadTransact();
           await _showTransactionsNotification();
         },
-        child: const Icon(Icons.pages), //add icon for navigating to another page
+        child: const Icon(Icons.pages),
       ),
     );
   }
