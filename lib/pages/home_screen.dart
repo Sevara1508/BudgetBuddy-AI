@@ -19,7 +19,6 @@ class _Home_ScreenState extends State<Home_Screen> {
 
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
-
   @override
   void initState() {
     super.initState();
@@ -28,9 +27,11 @@ class _Home_ScreenState extends State<Home_Screen> {
   }
 
   Future<void> _initializeNotifications() async {
+    const AndroidInitializationSettings andriodInitSettings = AndroidInitializationSettings("app_icon");
     const LinuxInitializationSettings linuxInitSettings = LinuxInitializationSettings(defaultActionName: "Open");
 
     const InitializationSettings initSettings = InitializationSettings(
+      android: andriodInitSettings,
       linux: linuxInitSettings
       );
 
