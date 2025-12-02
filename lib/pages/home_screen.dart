@@ -124,7 +124,9 @@ class _Home_ScreenState extends State<Home_Screen> {
             final t = _transactions[index];
             return Container(
               width: 500.0,
-              color: Colors.lightBlueAccent,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF3B2F4A)    // dark purple-grey
+                  : const Color(0xFFEDE7F6),   // light lavender
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
