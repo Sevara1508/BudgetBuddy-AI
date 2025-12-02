@@ -6,7 +6,6 @@ import '../models/transaction_model.dart';
 import 'transaction_screen.dart';
 import 'settings_screen.dart';
 import 'currency_converter_screen.dart'; // Add this import
-import '../l10n/app_localizations.dart';
 
 class Home_Screen extends StatefulWidget {
   final String title;
@@ -148,6 +147,19 @@ class _Home_ScreenState extends State<Home_Screen> {
               ).then((_) => _loadData()); // refresh budget if changed
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.analytics),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AnalyticsScreen(title: 'Analytics'),
+                ),
+              );
+            },
+            tooltip: 'Analytics',
+          ),
+
         ],
       ),
 
