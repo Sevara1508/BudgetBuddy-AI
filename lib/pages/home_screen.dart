@@ -5,6 +5,7 @@ import '../services/db_helper.dart';
 import '../models/transaction_model.dart';
 import 'transaction_screen.dart';
 import 'settings_screen.dart';
+import 'currency_converter_screen.dart'; // Add this import
 import '../l10n/app_localizations.dart';
 
 class Home_Screen extends StatefulWidget {
@@ -118,6 +119,20 @@ class _Home_ScreenState extends State<Home_Screen> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
+          // Currency converter button
+          IconButton(
+            icon: const Icon(Icons.currency_exchange),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CurrencyConverterScreen(),
+                ),
+              );
+            },
+            tooltip: 'Currency Converter',
+          ),
+          // Settings button
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -277,8 +292,9 @@ class _Home_ScreenState extends State<Home_Screen> {
       );
     }
 
+    // Show most recent transactions first (reverse the list)
     return Column(
-      children: _transactions.take(5).map((t) {
+      children: _transactions.reversed.take(5).map((t) {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
