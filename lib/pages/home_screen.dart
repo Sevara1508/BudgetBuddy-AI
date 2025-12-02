@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'settings_screen.dart';
-
-import '/models/transaction_model.dart';
-import '/services/db_helper.dart';
+import '../services/budget_service.dart';
+import '../services/db_helper.dart';
+import '../models/transaction_model.dart';
 import 'transaction_screen.dart';
+import 'settings_screen.dart';
 
 class Home_Screen extends StatefulWidget {
   final String title;
@@ -23,44 +23,54 @@ class Home_Screen extends StatefulWidget {
 }
 
 class _Home_ScreenState extends State<Home_Screen> {
+  // db + data
   final DBHelper _dbHelper = DBHelper();
   List<TransactionModel> _transactions = [];
 
-  // notification plugin instance used across all platforms
+  // weekly budget service
+  final BudgetService _budgetService = BudgetService();
+  double weeklyBudget = 0.0;
+
+  // notification system
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
     super.initState();
-    _initializeNotifications(); // set up notification settings once
-    _loadTransact();           // load saved transactions into list
+    _initializeNotifications();
+    _loadData();
   }
 
-  // sets up notification behaviors for android / ios / macos / linux
+  // load transactions + weekly budget
+  Future<void> _loadData() async {
+    final trans = await _dbHelper.getTransactions();
+    final budget = await _budgetService.getWeeklyBudget();
+
+    setState(() {
+      _transactions = trans;
+      weeklyBudget = budget;
+    });
+  }
+
+  // notification setup
   Future<void> _initializeNotifications() async {
-    const AndroidInitializationSettings androidInit =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const ios = DarwinInitializationSettings();
+    const linux = LinuxInitializationSettings(defaultActionName: "Open");
 
-    const DarwinInitializationSettings darwinInit =
-    DarwinInitializationSettings();
-
-    const LinuxInitializationSettings linuxInit =
-    LinuxInitializationSettings(defaultActionName: "Open");
-
-    // unified initialization config for all platforms
-    const InitializationSettings initSettings = InitializationSettings(
-      android: androidInit,
-      iOS: darwinInit,
-      macOS: darwinInit,
-      linux: linuxInit,
+    const settings = InitializationSettings(
+      android: android,
+      iOS: ios,
+      macOS: ios,
+      linux: linux,
     );
 
-    await _notificationsPlugin.initialize(initSettings);
+    await _notificationsPlugin.initialize(settings);
   }
 
-  // triggers a small popup notification after a new transaction is added
-  Future<void> _showTransactionsNotification() async {
+  // popup notification for new transactions
+  Future<void> _showTransactionNotification() async {
     if (_transactions.isEmpty) return;
 
     final latest = _transactions.last;
@@ -69,33 +79,41 @@ class _Home_ScreenState extends State<Home_Screen> {
       0,
       "New Transaction Added",
       "${latest.category}: \$${latest.amount.toStringAsFixed(2)}",
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          "transactions",
-          "Transactions",
-        ),
+      const NotificationDetails(
+        android: AndroidNotificationDetails("transactions", "Transactions"),
         iOS: DarwinNotificationDetails(),
         macOS: DarwinNotificationDetails(),
       ),
     );
   }
 
-  // reads transactions from the database and updates the ui list
-  Future<void> _loadTransact() async {
-    var transactions = await _dbHelper.getTransactions();
-    setState(() {
-      _transactions = transactions;
-    });
+  // calculate total weekly expenses
+  double get totalExpenses {
+    return _transactions.fold(
+      0.0,
+          (prev, item) => prev + item.amount,
+    );
+  }
+
+  // calculate remaining money
+  double get remainingBudget {
+    if (weeklyBudget == 0) return 0;
+    return (weeklyBudget - totalExpenses).clamp(0, weeklyBudget);
+  }
+
+  // calculate progress bar value
+  double get progress {
+    if (weeklyBudget == 0) return 0;
+    return (totalExpenses / weeklyBudget).clamp(0, 1);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
         title: Text(widget.title),
-
-        // opens the settings page where theme toggles live
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -108,47 +126,52 @@ class _Home_ScreenState extends State<Home_Screen> {
                     onToggleTheme: widget.onToggleTheme,
                   ),
                 ),
-              );
+              ).then((_) => _loadData()); // refresh budget if changed
             },
           ),
         ],
       ),
 
-      // simple horizontal list showing category, note, and amount
-      body: Container(
-        height: 100,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: _transactions.length,
-          itemBuilder: (context, index) {
-            final t = _transactions[index];
-            return Container(
-              width: 500.0,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF3B2F4A)    // dark purple-grey
-                  : const Color(0xFFEDE7F6),   // light lavender
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.category,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(t.note ?? ''),
-                    Text('\$${t.amount.toStringAsFixed(2)}'),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // headline
+            Text(
+              "Dashboard",
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
               ),
-            );
-          },
+            ),
+
+            const SizedBox(height: 20),
+
+            // card showing weekly summary
+            _buildSummaryCard(isDark),
+
+            const SizedBox(height: 30),
+
+            Text(
+              "Recent Transactions",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            _buildRecentTransactions(isDark),
+          ],
         ),
       ),
 
-      // button to open transaction page and refresh the list once user returns
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.pages),
+        child: const Icon(Icons.add),
         onPressed: () async {
           await Navigator.push(
             context,
@@ -158,10 +181,131 @@ class _Home_ScreenState extends State<Home_Screen> {
             ),
           );
 
-          await _loadTransact();              // reload entries after coming back
-          await _showTransactionsNotification(); // show popup for new entry
+          await _loadData();
+          await _showTransactionNotification();
         },
       ),
+    );
+  }
+
+  // dashboard summary card
+  Widget _buildSummaryCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF2E2A3A)
+            : const Color(0xFFF3EFFF),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Weekly Overview",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 15),
+
+          // expenses + budget numbers
+          Text(
+            "Total Expenses: \$${totalExpenses.toStringAsFixed(2)}",
+            style: TextStyle(
+              fontSize: 16,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            weeklyBudget == 0
+                ? "Weekly Budget: Not Set"
+                : "Weekly Budget: \$${weeklyBudget.toStringAsFixed(2)}",
+            style: TextStyle(
+              fontSize: 16,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          if (weeklyBudget != 0)
+            Text(
+              "Remaining: \$${remainingBudget.toStringAsFixed(2)}",
+              style: TextStyle(
+                fontSize: 16,
+                color: remainingBudget < weeklyBudget * 0.3
+                    ? Colors.redAccent
+                    : (isDark ? Colors.white70 : Colors.black87),
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          // progress bar
+          if (weeklyBudget != 0)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 10,
+                backgroundColor:
+                isDark ? Colors.white12 : Colors.black12,
+                valueColor: AlwaysStoppedAnimation(
+                  progress > 0.9
+                      ? Colors.red
+                      : (progress > 0.6 ? Colors.orange : Colors.green),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // recent transactions section
+  Widget _buildRecentTransactions(bool isDark) {
+    if (_transactions.isEmpty) {
+      return Text(
+        "No transactions yet.",
+        style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
+      );
+    }
+
+    return Column(
+      children: _transactions.take(5).map((t) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark
+                ? const Color(0xFF3B2F4A)
+                : const Color(0xFFEDE7F6),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t.category,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(t.note ?? ""),
+                ],
+              ),
+              Text(
+                "\$${t.amount.toStringAsFixed(2)}",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }
