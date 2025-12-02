@@ -126,6 +126,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get allTransactions => 'Toutes les transactions';
 
   @override
+  String get transactionDeleted => 'Transaction Deleted';
+
+  @override
   String get currencyConverter => 'Convertisseur de devises';
 
   @override

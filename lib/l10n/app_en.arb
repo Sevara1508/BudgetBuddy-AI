@@ -38,6 +38,7 @@
   "amount": "Amount",
   "saveTransaction": "Save Transaction",
   "allTransactions": "All Transactions",
+  "transactionDeleted": "Transaction Deleted",
 
   "currencyConverter": "Currency Converter",
   "convertCurrency": "Convert Currency",

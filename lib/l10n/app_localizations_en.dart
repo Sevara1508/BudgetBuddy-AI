@@ -126,6 +126,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allTransactions => 'All Transactions';
 
   @override
+  String get transactionDeleted => 'Transaction Deleted';
+
+  @override
   String get currencyConverter => 'Currency Converter';
 
   @override

@@ -332,6 +332,12 @@ abstract class AppLocalizations {
   /// **'All Transactions'**
   String get allTransactions;
 
+  /// No description provided for @transactionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Deleted'**
+  String get transactionDeleted;
+
   /// No description provided for @currencyConverter.
   ///
   /// In en, this message translates to:

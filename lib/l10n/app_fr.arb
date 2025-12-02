@@ -38,6 +38,7 @@
   "amount": "Montant",
   "saveTransaction": "Enregistrer la transaction",
   "allTransactions": "Toutes les transactions",
+  "transactionDelete": "Transaction supprimée",
 
   "currencyConverter": "Convertisseur de devises",
   "convertCurrency": "Convertir la devise",

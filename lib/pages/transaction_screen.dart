@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '/models/transaction_model.dart';
 import '/services/db_helper.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import '../l10n/app_localizations.dart';
 
 class Transaction_Screen extends StatefulWidget {
   const Transaction_Screen({super.key, required this.title});
@@ -19,8 +21,6 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
   String? _selectCategory; //in order to select category from picker
   DateTime? _selectDate; // in order to select date from picker
   double? _enterAmount; // in order to store amount entered from dialog
-
-  final List<String> _categories = ['Food','Shopping','Utilities','Transportation','Other']; // used in category picker
 
   @override
   void initState() {
@@ -67,15 +67,15 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
       _loadTransact();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Transaction added!"),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.transactionAdded),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Failed to add transaction!"),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.transactionFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -90,8 +90,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
     await _loadTransact();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Transaction deleted"), // notif
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.transactionDeleted), // notif
         backgroundColor: Colors.blue,
       ),
     );
@@ -99,6 +99,14 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
 
   @override
   Widget build(BuildContext context) {
+        final List<String> _categories = [
+      AppLocalizations.of(context)!.food,
+      AppLocalizations.of(context)!.shopping,
+      AppLocalizations.of(context)!.utilities,
+      AppLocalizations.of(context)!.transportation,
+      AppLocalizations.of(context)!.other
+    ]; // used in category picker
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
@@ -110,8 +118,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Add a New Transaction',
+              Text(
+                AppLocalizations.of(context)!.addNewTransaction,
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               //code for each input type (changed to pickers and dialog)
@@ -120,10 +128,10 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // create category picker using dropdown
               Row(
                 children: [
-                  const Text('Category: '),
+                  Text('${AppLocalizations.of(context)!.category}: '),
                   DropdownButton<String>(
                     value: _selectCategory,
-                    hint: const Text('Select'),
+                    hint: Text(AppLocalizations.of(context)!.select),
                     items: _categories
                         .map((category) => DropdownMenuItem(
                       value: category,
@@ -144,7 +152,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // create date picker
               Row(
                 children: [
-                  const Text('Date: '),
+                  Text('${AppLocalizations.of(context)!.date}: '),
                   TextButton(
                     onPressed: () async {
                       final chosenDate = await showDatePicker(
@@ -161,7 +169,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                     },
                     child: Text(
                       _selectDate == null
-                          ? 'Select Date'
+                          ? AppLocalizations.of(context)!.selectDate
                           : _selectDate!.toString().split(' ')[0],
                     ),
                   ),
@@ -173,8 +181,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // keep note so user can enter in any text
               TextField(
                 controller: _noteController,
-                decoration: const InputDecoration(
-                  labelText: 'Note',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.note,
                 ),
               ),
 
@@ -182,7 +190,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
 
               Row(
                 children: [
-                  const Text('Amount: '),
+                  Text('${AppLocalizations.of(context)!.amount}: '),
                   TextButton(
                     onPressed: () async {
                       final controller = TextEditingController();
@@ -191,12 +199,12 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: const Text('Enter Amount '),
+                            title: Text('${AppLocalizations.of(context)!.enterAmount} '),
                             content: TextField(
                               controller: controller,
                               keyboardType: TextInputType.number,
                               decoration:
-                              const InputDecoration(labelText: 'Amount'),
+                              InputDecoration(labelText: AppLocalizations.of(context)!.amount),
                             ),
                             actions: [
                               TextButton(
@@ -206,7 +214,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                                     double.tryParse(controller.text) ?? 0.0,
                                   );
                                 },
-                                child: const Text('Save'),
+                                child: Text(AppLocalizations.of(context)!.save), // display "Save" button
                               ),
                             ],
                           );
@@ -221,7 +229,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                     },
                     child: Text(
                       _enterAmount == null
-                          ? 'Enter Amount'
+                          ? AppLocalizations.of(context)!.enterAmount
                           : '\$${_enterAmount!.toStringAsFixed(2)}',
                     ),
                   ),
@@ -232,13 +240,13 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
 
               ElevatedButton(
                 onPressed: _addTransaction,
-                child: const Text('Save Transaction'),
+                child: Text(AppLocalizations.of(context)!.saveTransaction),
               ),
 
               const SizedBox(height: 20),
               const Divider(),
-              const Text(
-                'All Transactions',
+              Text(
+                AppLocalizations.of(context)!.allTransactions,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
