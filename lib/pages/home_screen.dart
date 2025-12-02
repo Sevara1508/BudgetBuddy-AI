@@ -156,8 +156,8 @@ class _Home_ScreenState extends State<Home_Screen> {
             ),
           );
 
-          _loadTransact();              // reload entries after coming back
-          _showTransactionsNotification(); // show popup for new entry
+          await _loadTransact();              // reload entries after coming back
+          await _showTransactionsNotification(); // show popup for new entry
         },
       ),
     );
