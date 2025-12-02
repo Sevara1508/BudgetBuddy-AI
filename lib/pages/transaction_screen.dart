@@ -246,7 +246,9 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                 itemBuilder: (context, index) {
                   var inp = _transactions[index];
                   return Card(
-                    color: Colors.lightBlueAccent,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF3B2F4A)    // dark purple-grey
+                        : const Color(0xFFEDE7F6),   // light lavender
                     child: ListTile(
                       title: Text(
                         inp.category,
