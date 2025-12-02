@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home_screen.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
@@ -30,11 +32,18 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late bool _darkMode;
+  Locale _locale = const Locale('en');
 
   @override
   void initState() {
     super.initState();
     _darkMode = widget.isDarkMode;
+    SharedPreferences.getInstance().then((prefs) {
+      final lang = prefs.getString("language") ?? "en";
+      setState(() {
+        _locale = Locale(lang);
+      });
+    });
   }
 
   void toggleTheme(bool value) async {
@@ -43,6 +52,23 @@ class _MyAppState extends State<MyApp> {
 
     setState(() {
       _darkMode = value;
+    });
+  }
+
+  void onChangeLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(()
+    {
+      if (_locale.languageCode == 'en') {
+        _locale = const Locale('fr');
+        prefs.setString("language", "fr");
+      }
+      else
+      {
+        _locale = const Locale('en');
+        prefs.setString("language", "en");
+      }
     });
   }
 
@@ -56,9 +82,23 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
 
+      locale: _locale,
+      supportedLocales: const [
+        Locale("en"),
+        Locale("fr"),
+      ],
+
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
       home: Home_Screen(
         title: 'Budget Buddy Home Page',
         onToggleTheme: toggleTheme, // pass function to child
+        onChangeLanguage: onChangeLanguage,
         isDarkMode: _darkMode,
       ),
     );
