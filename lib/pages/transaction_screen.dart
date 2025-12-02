@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '/models/transaction_model.dart';
 import '/services/db_helper.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import '../l10n/app_localizations.dart';
 
 class Transaction_Screen extends StatefulWidget {
   const Transaction_Screen({super.key, required this.title});
@@ -21,6 +19,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
   String? _selectCategory; //in order to select category from picker
   DateTime? _selectDate; // in order to select date from picker
   double? _enterAmount; // in order to store amount entered from dialog
+
+  final List<String> _categories = ['Food','Shopping','Utilities','Transportation','Other']; // used in category picker
 
   @override
   void initState() {
@@ -83,15 +83,6 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
   }
   @override
   Widget build(BuildContext context) {
-
-    final List<String> _categories = [
-      AppLocalizations.of(context)!.food,
-      AppLocalizations.of(context)!.shopping,
-      AppLocalizations.of(context)!.utilities,
-      AppLocalizations.of(context)!.transportation,
-      AppLocalizations.of(context)!.other
-    ]; // used in category picker
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
@@ -103,8 +94,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                AppLocalizations.of(context)!.addNewTransaction,
+              const Text(
+                'Add a New Transaction',
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               //code for each input type (changed to pickers and dialog)
@@ -113,7 +104,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // create category picker using dropdown
               Row(
                 children: [
-                  Text('${AppLocalizations.of(context)!.category}: '),
+                  const Text('Category: '),
                   DropdownButton<String>(
                     value: _selectCategory,
                     hint: const Text('Select'),
@@ -139,7 +130,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // create date picker
               Row(
                 children: [
-                  Text('${AppLocalizations.of(context)!.date}: '),
+                  const Text('Date: '),
                   TextButton(
                     onPressed: () async {
                       // open date picker from flutter library
@@ -159,7 +150,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                     // display the selected date or prompt to choose one
                     child: Text(
                       _selectDate == null
-                          ? AppLocalizations.of(context)!.selectDate
+                          ? 'Select Date'
                           : _selectDate!.toString().split(' ')[0],
                     ),
                   ),
@@ -172,8 +163,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // keep note so user can enter in any text
               TextField(
                 controller: _noteController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.note,
+                decoration: const InputDecoration(
+                  labelText: 'Note',
                 ),
               ),
 
@@ -182,7 +173,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // create amount input dialog
               Row(
                 children: [
-                  Text('${AppLocalizations.of(context)!.amount}: '),
+                  const Text('Amount: '),
                   TextButton(
                     onPressed: () async {
                       final controller = TextEditingController();
@@ -192,7 +183,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: Text('${AppLocalizations.of(context)!.enterAmount} '),
+                            title: const Text('Enter Amount '),
                             content: TextField(
                               controller: controller,
                               keyboardType: TextInputType.number,
@@ -208,7 +199,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                                     double.tryParse(controller.text) ?? 0.0,
                                   );
                                 },
-                                child: Text(AppLocalizations.of(context)!.save), // display "Save" button
+                                child: const Text('Save'), // display "Save" button
                               ),
                             ],
                           );
@@ -224,7 +215,7 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                     // display the entered amount or prompt user to enter one
                     child: Text(
                       _enterAmount == null
-                          ? AppLocalizations.of(context)!.enterAmount
+                          ? 'Enter Amount'
                           : '\$${_enterAmount!.toStringAsFixed(2)}',
                     ),
                   ),
@@ -236,13 +227,13 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               //button to save transaction
               ElevatedButton(
                 onPressed: _addTransaction,
-                child: Text(AppLocalizations.of(context)!.saveTransaction),
+                child: const Text('Save Transaction'),
               ),
 
               const SizedBox(height: 20),
               const Divider(),
-              Text(
-                AppLocalizations.of(context)!.allTransactions,
+              const Text(
+                'All Transactions',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
