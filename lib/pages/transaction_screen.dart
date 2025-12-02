@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '/models/transaction_model.dart';
 import '/services/db_helper.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import '../l10n/app_localizations.dart';
 
 class Transaction_Screen extends StatefulWidget {
   const Transaction_Screen({super.key, required this.title});
@@ -21,6 +19,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
   String? _selectCategory; //in order to select category from picker
   DateTime? _selectDate; // in order to select date from picker
   double? _enterAmount; // in order to store amount entered from dialog
+
+  final List<String> _categories = ['Food','Shopping','Utilities','Transportation','Other']; // used in category picker
 
   @override
   void initState() {
@@ -70,28 +70,35 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
         const SnackBar(
           content: Text("Transaction added!"),
           backgroundColor: Colors.green,
-          ),
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Failed to add transaction!"),
           backgroundColor: Colors.red,
-          ),
+        ),
       );
     }
   }
+
+  // create function to deletes a transaction
+  Future<void> _deleteTransaction(int? id) async {
+    if (id == null) return;
+
+    await _dbHelper.deleteTransaction(id);
+    await _loadTransact();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Transaction deleted"), // notif
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
-    final List<String> _categories = [
-      AppLocalizations.of(context)!.food,
-      AppLocalizations.of(context)!.shopping,
-      AppLocalizations.of(context)!.utilities,
-      AppLocalizations.of(context)!.transportation,
-      AppLocalizations.of(context)!.other
-    ]; // used in category picker
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
@@ -103,8 +110,8 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                AppLocalizations.of(context)!.addNewTransaction,
+              const Text(
+                'Add a New Transaction',
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               //code for each input type (changed to pickers and dialog)
@@ -113,18 +120,16 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // create category picker using dropdown
               Row(
                 children: [
-                  Text('${AppLocalizations.of(context)!.category}: '),
+                  const Text('Category: '),
                   DropdownButton<String>(
                     value: _selectCategory,
                     hint: const Text('Select'),
                     items: _categories
-                    // to create dropdown items from the categories list
                         .map((category) => DropdownMenuItem(
                       value: category,
                       child: Text(category),
                     ))
                         .toList(),
-                    // when user selects a category from dropdown
                     onChanged: (value) {
                       setState(() {
                         _selectCategory = value;
@@ -139,67 +144,60 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
               // create date picker
               Row(
                 children: [
-                  Text('${AppLocalizations.of(context)!.date}: '),
+                  const Text('Date: '),
                   TextButton(
                     onPressed: () async {
-                      // open date picker from flutter library
                       final chosenDate = await showDatePicker(
                         context: context,
                         initialDate: DateTime.now(),
                         firstDate: DateTime(2004),
                         lastDate: DateTime(2100),
                       );
-                      // if user selected a date, save it
                       if (chosenDate != null) {
                         setState(() {
                           _selectDate = chosenDate;
                         });
                       }
                     },
-                    // display the selected date or prompt to choose one
                     child: Text(
                       _selectDate == null
-                          ? AppLocalizations.of(context)!.selectDate
+                          ? 'Select Date'
                           : _selectDate!.toString().split(' ')[0],
                     ),
                   ),
                 ],
               ),
 
-
               const SizedBox(height: 10),
 
               // keep note so user can enter in any text
               TextField(
                 controller: _noteController,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.note,
+                decoration: const InputDecoration(
+                  labelText: 'Note',
                 ),
               ),
 
               const SizedBox(height: 10),
 
-              // create amount input dialog
               Row(
                 children: [
-                  Text('${AppLocalizations.of(context)!.amount}: '),
+                  const Text('Amount: '),
                   TextButton(
                     onPressed: () async {
                       final controller = TextEditingController();
 
-                      // show dialog to enter an amount
                       final result = await showDialog<double>(
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: Text('${AppLocalizations.of(context)!.enterAmount} '),
+                            title: const Text('Enter Amount '),
                             content: TextField(
                               controller: controller,
                               keyboardType: TextInputType.number,
                               decoration:
                               const InputDecoration(labelText: 'Amount'),
                             ),
-                            // save button to return the entered amount
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -208,46 +206,43 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                                     double.tryParse(controller.text) ?? 0.0,
                                   );
                                 },
-                                child: Text(AppLocalizations.of(context)!.save), // display "Save" button
+                                child: const Text('Save'),
                               ),
                             ],
                           );
                         },
                       );
-                      // if user entered a valid amount then update it
+
                       if (result != null) {
                         setState(() {
                           _enterAmount = result;
                         });
                       }
                     },
-                    // display the entered amount or prompt user to enter one
                     child: Text(
                       _enterAmount == null
-                          ? AppLocalizations.of(context)!.enterAmount
+                          ? 'Enter Amount'
                           : '\$${_enterAmount!.toStringAsFixed(2)}',
                     ),
                   ),
                 ],
               ),
 
-
               const SizedBox(height: 20),
-              //button to save transaction
+
               ElevatedButton(
                 onPressed: _addTransaction,
-                child: Text(AppLocalizations.of(context)!.saveTransaction),
+                child: const Text('Save Transaction'),
               ),
 
               const SizedBox(height: 20),
               const Divider(),
-              Text(
-                AppLocalizations.of(context)!.allTransactions,
+              const Text(
+                'All Transactions',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
 
-              //code for the saved transactions
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -256,15 +251,29 @@ class _Transaction_ScreenState extends State<Transaction_Screen> {
                   var inp = _transactions[index];
                   return Card(
                     color: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF3B2F4A)    // dark purple-grey
-                        : const Color(0xFFEDE7F6),   // light lavender
+                        ? const Color(0xFF3B2F4A)
+                        : const Color(0xFFEDE7F6),
                     child: ListTile(
                       title: Text(
                         inp.category,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(inp.note ?? ''),
-                      trailing: Text('\$${inp.amount.toStringAsFixed(2)}'), //displays amount in decimal
+
+                      // updated to also delete transaction
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('\$${inp.amount.toStringAsFixed(2)}'), //displays amount in decimal
+                          const SizedBox(width: 12),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              _deleteTransaction(inp.id);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
