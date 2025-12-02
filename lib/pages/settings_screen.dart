@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import '../services/settings_service.dart';
 import '../services/budget_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
   final bool isDarkMode;
   final Function(bool) onToggleTheme;
+  final void Function() onChangeLanguage;
 
   const SettingsScreen({
     super.key,
     required this.isDarkMode,
     required this.onToggleTheme,
+    required this.onChangeLanguage,
   });
 
   @override
@@ -33,6 +37,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     darkMode = widget.isDarkMode;
     _loadSettings();
   }
+
+  
 
   Future<void> _loadSettings() async {
     notifications = await _service.getNotificationsEnabled();
@@ -94,6 +100,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               setState(() => darkMode = value);
               widget.onToggleTheme(value);
             },
+          ),
+
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.changeLanguage),
+            trailing: const Icon(Icons.language),
+            onTap: widget.onChangeLanguage,
           ),
 
           const Divider(),

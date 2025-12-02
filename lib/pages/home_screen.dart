@@ -5,17 +5,20 @@ import '../services/db_helper.dart';
 import '../models/transaction_model.dart';
 import 'transaction_screen.dart';
 import 'settings_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class Home_Screen extends StatefulWidget {
   final String title;
   final bool isDarkMode;
   final Function(bool) onToggleTheme;
+  final VoidCallback onChangeLanguage;
 
   const Home_Screen({
     super.key,
     required this.title,
     required this.isDarkMode,
     required this.onToggleTheme,
+    required this.onChangeLanguage,
   });
 
   @override
@@ -77,7 +80,7 @@ class _Home_ScreenState extends State<Home_Screen> {
 
     await _notificationsPlugin.show(
       0,
-      "New Transaction Added",
+      "${AppLocalizations.of(context)!.homeTitle}",
       "${latest.category}: \$${latest.amount.toStringAsFixed(2)}",
       const NotificationDetails(
         android: AndroidNotificationDetails("transactions", "Transactions"),
@@ -124,6 +127,7 @@ class _Home_ScreenState extends State<Home_Screen> {
                   builder: (context) => SettingsScreen(
                     isDarkMode: widget.isDarkMode,
                     onToggleTheme: widget.onToggleTheme,
+                    onChangeLanguage: widget.onChangeLanguage,
                   ),
                 ),
               ).then((_) => _loadData()); // refresh budget if changed
@@ -139,7 +143,7 @@ class _Home_ScreenState extends State<Home_Screen> {
           children: [
             // headline
             Text(
-              "Dashboard",
+              AppLocalizations.of(context)!.dashboard,
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -155,7 +159,7 @@ class _Home_ScreenState extends State<Home_Screen> {
             const SizedBox(height: 30),
 
             Text(
-              "Recent Transactions",
+              AppLocalizations.of(context)!.recentTransactions,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -202,7 +206,7 @@ class _Home_ScreenState extends State<Home_Screen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Weekly Overview",
+            AppLocalizations.of(context)!.weeklyOverview,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -213,7 +217,7 @@ class _Home_ScreenState extends State<Home_Screen> {
 
           // expenses + budget numbers
           Text(
-            "Total Expenses: \$${totalExpenses.toStringAsFixed(2)}",
+            "${AppLocalizations.of(context)!.totalExpenses}: \$${totalExpenses.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: 16,
               color: isDark ? Colors.white70 : Colors.black87,
@@ -222,8 +226,8 @@ class _Home_ScreenState extends State<Home_Screen> {
           const SizedBox(height: 4),
           Text(
             weeklyBudget == 0
-                ? "Weekly Budget: Not Set"
-                : "Weekly Budget: \$${weeklyBudget.toStringAsFixed(2)}",
+                ? "${AppLocalizations.of(context)!.weeklyBudget}: ${AppLocalizations.of(context)!.notSet}"
+                : "${AppLocalizations.of(context)!.weeklyBudget}: \$${weeklyBudget.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: 16,
               color: isDark ? Colors.white70 : Colors.black87,
@@ -232,7 +236,7 @@ class _Home_ScreenState extends State<Home_Screen> {
           const SizedBox(height: 4),
           if (weeklyBudget != 0)
             Text(
-              "Remaining: \$${remainingBudget.toStringAsFixed(2)}",
+              "${AppLocalizations.of(context)!.remaining}: \$${remainingBudget.toStringAsFixed(2)}",
               style: TextStyle(
                 fontSize: 16,
                 color: remainingBudget < weeklyBudget * 0.3
@@ -268,7 +272,7 @@ class _Home_ScreenState extends State<Home_Screen> {
   Widget _buildRecentTransactions(bool isDark) {
     if (_transactions.isEmpty) {
       return Text(
-        "No transactions yet.",
+        AppLocalizations.of(context)!.noTransactions,
         style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
       );
     }
