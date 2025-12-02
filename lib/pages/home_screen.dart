@@ -4,8 +4,7 @@ import 'settings_screen.dart';
 
 import '/models/transaction_model.dart';
 import '/services/db_helper.dart';
-import 'transaction_screen.dart'; // import your screen here
-
+import 'transaction_screen.dart';
 
 class Home_Screen extends StatefulWidget {
   final String title;
@@ -23,38 +22,47 @@ class Home_Screen extends StatefulWidget {
   State<Home_Screen> createState() => _Home_ScreenState();
 }
 
-
 class _Home_ScreenState extends State<Home_Screen> {
   final DBHelper _dbHelper = DBHelper();
   List<TransactionModel> _transactions = [];
 
+  // notification plugin instance used across all platforms
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
     super.initState();
-    _initializeNotifications();
-    _loadTransact();
+    _initializeNotifications(); // set up notification settings once
+    _loadTransact();           // load saved transactions into list
   }
 
+  // sets up notification behaviors for android / ios / macos / linux
   Future<void> _initializeNotifications() async {
-    const DarwinInitializationSettings darwinInit = DarwinInitializationSettings();
-    const LinuxInitializationSettings linuxInit = LinuxInitializationSettings(defaultActionName: "Open");
+    const AndroidInitializationSettings androidInit =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
 
+    const DarwinInitializationSettings darwinInit =
+    DarwinInitializationSettings();
+
+    const LinuxInitializationSettings linuxInit =
+    LinuxInitializationSettings(defaultActionName: "Open");
+
+    // unified initialization config for all platforms
     const InitializationSettings initSettings = InitializationSettings(
+      android: androidInit,
       iOS: darwinInit,
       macOS: darwinInit,
       linux: linuxInit,
-      android: null,
     );
 
     await _notificationsPlugin.initialize(initSettings);
   }
 
-
+  // triggers a small popup notification after a new transaction is added
   Future<void> _showTransactionsNotification() async {
     if (_transactions.isEmpty) return;
+
     final latest = _transactions.last;
 
     await _notificationsPlugin.show(
@@ -72,7 +80,7 @@ class _Home_ScreenState extends State<Home_Screen> {
     );
   }
 
-
+  // reads transactions from the database and updates the ui list
   Future<void> _loadTransact() async {
     var transactions = await _dbHelper.getTransactions();
     setState(() {
@@ -87,7 +95,7 @@ class _Home_ScreenState extends State<Home_Screen> {
         backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
         title: Text(widget.title),
 
-        //ADDED SETTINGS BUTTON HERE
+        // opens the settings page where theme toggles live
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -106,6 +114,7 @@ class _Home_ScreenState extends State<Home_Screen> {
         ],
       ),
 
+      // simple horizontal list showing category, note, and amount
       body: Container(
         height: 100,
         child: ListView.builder(
@@ -121,8 +130,10 @@ class _Home_ScreenState extends State<Home_Screen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t.category,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      t.category,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     Text(t.note ?? ''),
                     Text('\$${t.amount.toStringAsFixed(2)}'),
                   ],
@@ -133,19 +144,21 @@ class _Home_ScreenState extends State<Home_Screen> {
         ),
       ),
 
+      // button to open transaction page and refresh the list once user returns
       floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.pages),
         onPressed: () async {
-          final result = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
               const Transaction_Screen(title: 'Transactions'),
             ),
           );
-          _loadTransact();
-          _showTransactionsNotification();
+
+          _loadTransact();              // reload entries after coming back
+          _showTransactionsNotification(); // show popup for new entry
         },
-        child: const Icon(Icons.pages),
       ),
     );
   }
