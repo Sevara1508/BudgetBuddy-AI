@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home_screen.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
@@ -7,9 +6,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
 
-  // inting db
+  // init db
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 
@@ -58,7 +56,7 @@ class _MyAppState extends State<MyApp> {
 
       home: Home_Screen(
         title: 'Budget Buddy Home Page',
-        onToggleTheme: toggleTheme, // pass function to child
+        onToggleTheme: toggleTheme,
         isDarkMode: _darkMode,
       ),
     );
