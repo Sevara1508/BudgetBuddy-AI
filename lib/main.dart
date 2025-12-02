@@ -9,6 +9,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
+  // inting db
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+
   // load saved theme
   final prefs = await SharedPreferences.getInstance();
   final bool isDark = prefs.getBool("darkMode") ?? false;
