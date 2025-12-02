@@ -114,8 +114,8 @@ class _Home_ScreenState extends State<Home_Screen> {
               const Transaction_Screen(title: 'Transactions'),
             ),
           );
-          _loadTransact();
-          _showTransactionsNotification();
+          await _loadTransact();
+          await _showTransactionsNotification();
         },
         child: const Icon(Icons.pages), //add icon for navigating to another page
       ),
