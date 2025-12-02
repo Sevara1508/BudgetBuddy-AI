@@ -28,8 +28,8 @@ class _Home_ScreenState extends State<Home_Screen> {
   final DBHelper _dbHelper = DBHelper();
   List<TransactionModel> _transactions = [];
 
-  final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
-
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+  FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
@@ -39,17 +39,19 @@ class _Home_ScreenState extends State<Home_Screen> {
   }
 
   Future<void> _initializeNotifications() async {
-
-    const AndroidInitializationSettings andriodInitSettings = AndroidInitializationSettings("app_icon");
-    const LinuxInitializationSettings linuxInitSettings = LinuxInitializationSettings(defaultActionName: "Open");
+    const DarwinInitializationSettings darwinInit = DarwinInitializationSettings();
+    const LinuxInitializationSettings linuxInit = LinuxInitializationSettings(defaultActionName: "Open");
 
     const InitializationSettings initSettings = InitializationSettings(
-      android: andriodInitSettings,
-      linux: linuxInitSettings
-      );
+      iOS: darwinInit,
+      macOS: darwinInit,
+      linux: linuxInit,
+      android: null,
+    );
 
     await _notificationsPlugin.initialize(initSettings);
   }
+
 
   Future<void> _showTransactionsNotification() async {
     if (_transactions.isEmpty) return;
@@ -140,8 +142,8 @@ class _Home_ScreenState extends State<Home_Screen> {
               const Transaction_Screen(title: 'Transactions'),
             ),
           );
-          await _loadTransact();
-          await _showTransactionsNotification();
+          _loadTransact();
+          _showTransactionsNotification();
         },
         child: const Icon(Icons.pages),
       ),
