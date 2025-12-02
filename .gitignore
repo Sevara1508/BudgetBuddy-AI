@@ -9,7 +9,7 @@
 *.swp
 .buildlog/
 .history
-.env
+
 
 
 
