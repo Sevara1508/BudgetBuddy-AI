@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+// services for storage and logic
 import '../services/budget_service.dart';
 import '../services/db_helper.dart';
+
+// model for transaction entries
 import '../models/transaction_model.dart';
+
+// app pages
 import 'transaction_screen.dart';
 import 'settings_screen.dart';
-import 'currency_converter_screen.dart'; // Add this import
+import 'currency_converter_screen.dart';
+import '../l10n/app_localizations.dart';
+import 'analytics_screen.dart';
 
 class Home_Screen extends StatefulWidget {
-  final String title;
   final bool isDarkMode;
   final Function(bool) onToggleTheme;
   final VoidCallback onChangeLanguage;
 
+  // constructor receives theme + language callbacks from main.dart
   const Home_Screen({
     super.key,
-    required this.title,
     required this.isDarkMode,
     required this.onToggleTheme,
     required this.onChangeLanguage,
@@ -26,42 +33,50 @@ class Home_Screen extends StatefulWidget {
 }
 
 class _Home_ScreenState extends State<Home_Screen> {
-  // db + data
+  // db helper handles all sqlite reads/writes
   final DBHelper _dbHelper = DBHelper();
+
+  // list of all saved transactions
   List<TransactionModel> _transactions = [];
 
-  // weekly budget service
+  // service used to read / write weekly budget
   final BudgetService _budgetService = BudgetService();
   double weeklyBudget = 0.0;
 
-  // notification system
+  // notifications handler for popup alerts
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
     super.initState();
+
+    // initializes notification channels
     _initializeNotifications();
+
+    // loads stored transactions + stored weekly budget
     _loadData();
   }
 
-  // load transactions + weekly budget
+  // loads all transactions + weekly budget from sqlite
   Future<void> _loadData() async {
     final trans = await _dbHelper.getTransactions();
     final budget = await _budgetService.getWeeklyBudget();
 
+    // update local state so ui reflects database values
     setState(() {
       _transactions = trans;
       weeklyBudget = budget;
     });
   }
 
-  // notification setup
+  // sets up notification channels for android, ios, macos, linux
   Future<void> _initializeNotifications() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings();
     const linux = LinuxInitializationSettings(defaultActionName: "Open");
 
+    // default initialization for all platforms
     const settings = InitializationSettings(
       android: android,
       iOS: ios,
@@ -72,15 +87,17 @@ class _Home_ScreenState extends State<Home_Screen> {
     await _notificationsPlugin.initialize(settings);
   }
 
-  // popup notification for new transactions
+  // shows popup when a new transaction is added
   Future<void> _showTransactionNotification() async {
+    // nothing to show if user has no transactions
     if (_transactions.isEmpty) return;
 
+    // get the most recent transaction
     final latest = _transactions.last;
 
     await _notificationsPlugin.show(
       0,
-      "${AppLocalizations.of(context)!.homeTitle}",
+      AppLocalizations.of(context)!.homeTitle,
       "${latest.category}: \$${latest.amount.toStringAsFixed(2)}",
       const NotificationDetails(
         android: AndroidNotificationDetails("transactions", "Transactions"),
@@ -90,21 +107,17 @@ class _Home_ScreenState extends State<Home_Screen> {
     );
   }
 
-  // calculate total weekly expenses
-  double get totalExpenses {
-    return _transactions.fold(
-      0.0,
-          (prev, item) => prev + item.amount,
-    );
-  }
+  // calculates total amount spent
+  double get totalExpenses =>
+      _transactions.fold(0.0, (sum, t) => sum + t.amount);
 
-  // calculate remaining money
+  // calculates remaining weekly budget
   double get remainingBudget {
     if (weeklyBudget == 0) return 0;
     return (weeklyBudget - totalExpenses).clamp(0, weeklyBudget);
   }
 
-  // calculate progress bar value
+  // calculates percentage used for progress bar
   double get progress {
     if (weeklyBudget == 0) return 0;
     return (totalExpenses / weeklyBudget).clamp(0, 1);
@@ -112,13 +125,15 @@ class _Home_ScreenState extends State<Home_Screen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!; // localized strings
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      // top bar with title and icons
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(t.homeTitle),
         actions: [
-          // Currency converter button
+          // currency converter button
           IconButton(
             icon: const Icon(Icons.currency_exchange),
             onPressed: () {
@@ -129,9 +144,10 @@ class _Home_ScreenState extends State<Home_Screen> {
                 ),
               );
             },
-            tooltip: 'Currency Converter',
+            tooltip: t.currencyConverter,
           ),
-          // Settings button
+
+          // settings button
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -144,33 +160,36 @@ class _Home_ScreenState extends State<Home_Screen> {
                     onChangeLanguage: widget.onChangeLanguage,
                   ),
                 ),
-              ).then((_) => _loadData()); // refresh budget if changed
+              ).then((_) => _loadData()); // reload after returning
             },
+            tooltip: t.settings,
           ),
+
+          // analytics button
           IconButton(
             icon: const Icon(Icons.analytics),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const AnalyticsScreen(title: 'Analytics'),
+                  builder: (context) => AnalyticsScreen(title: t.dashboard),
                 ),
               );
             },
-            tooltip: 'Analytics',
+            tooltip: "analytics",
           ),
-
         ],
       ),
 
+      // main scroll area
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // headline
+            // big dashboard title
             Text(
-              AppLocalizations.of(context)!.dashboard,
+              t.dashboard,
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -180,13 +199,14 @@ class _Home_ScreenState extends State<Home_Screen> {
 
             const SizedBox(height: 20),
 
-            // card showing weekly summary
-            _buildSummaryCard(isDark),
+            // weekly summary card
+            _buildSummaryCard(isDark, t),
 
             const SizedBox(height: 30),
 
+            // recent transactions section title
             Text(
-              AppLocalizations.of(context)!.recentTransactions,
+              t.recentTransactions,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -196,34 +216,40 @@ class _Home_ScreenState extends State<Home_Screen> {
 
             const SizedBox(height: 15),
 
-            _buildRecentTransactions(isDark),
+            // recent transactions list
+            _buildRecentTransactions(isDark, t),
           ],
         ),
       ),
 
+      // new transaction button
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
+          // open transaction input page
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-              const Transaction_Screen(title: 'Transactions'),
+              builder: (context) => Transaction_Screen(title: t.transaction),
             ),
           );
 
+          // reload data after returning
           await _loadData();
+
+          // notify the user
           await _showTransactionNotification();
         },
       ),
     );
   }
 
-  // dashboard summary card
-  Widget _buildSummaryCard(bool isDark) {
+  // weekly summary box
+  Widget _buildSummaryCard(bool isDark, AppLocalizations t) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        // background color depends on theme
         color: isDark
             ? const Color(0xFF2E2A3A)
             : const Color(0xFFF3EFFF),
@@ -232,38 +258,46 @@ class _Home_ScreenState extends State<Home_Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // header label
           Text(
-            AppLocalizations.of(context)!.weeklyOverview,
+            t.weeklyOverview,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black87,
             ),
           ),
+
           const SizedBox(height: 15),
 
-          // expenses + budget numbers
+          // total expenses
           Text(
-            "${AppLocalizations.of(context)!.totalExpenses}: \$${totalExpenses.toStringAsFixed(2)}",
+            "${t.totalExpenses}: \$${totalExpenses.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: 16,
               color: isDark ? Colors.white70 : Colors.black87,
             ),
           ),
+
           const SizedBox(height: 4),
+
+          // weekly budget amount
           Text(
             weeklyBudget == 0
-                ? "${AppLocalizations.of(context)!.weeklyBudget}: ${AppLocalizations.of(context)!.notSet}"
-                : "${AppLocalizations.of(context)!.weeklyBudget}: \$${weeklyBudget.toStringAsFixed(2)}",
+                ? "${t.weeklyBudget}: ${t.notSet}"
+                : "${t.weeklyBudget}: \$${weeklyBudget.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: 16,
               color: isDark ? Colors.white70 : Colors.black87,
             ),
           ),
+
           const SizedBox(height: 4),
+
+          // remaining money
           if (weeklyBudget != 0)
             Text(
-              "${AppLocalizations.of(context)!.remaining}: \$${remainingBudget.toStringAsFixed(2)}",
+              "${t.remaining}: \$${remainingBudget.toStringAsFixed(2)}",
               style: TextStyle(
                 fontSize: 16,
                 color: remainingBudget < weeklyBudget * 0.3
@@ -274,7 +308,7 @@ class _Home_ScreenState extends State<Home_Screen> {
 
           const SizedBox(height: 20),
 
-          // progress bar
+          // progress bar for spending
           if (weeklyBudget != 0)
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
@@ -295,18 +329,19 @@ class _Home_ScreenState extends State<Home_Screen> {
     );
   }
 
-  // recent transactions section
-  Widget _buildRecentTransactions(bool isDark) {
+  // recent transactions builder
+  Widget _buildRecentTransactions(bool isDark, AppLocalizations t) {
+    // empty state message
     if (_transactions.isEmpty) {
       return Text(
-        AppLocalizations.of(context)!.noTransactions,
+        t.noTransactions,
         style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
       );
     }
 
-    // Show most recent transactions first (reverse the list)
+    // show up to 5 most recent transactions
     return Column(
-      children: _transactions.reversed.take(5).map((t) {
+      children: _transactions.reversed.take(5).map((tr) {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
@@ -319,19 +354,22 @@ class _Home_ScreenState extends State<Home_Screen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // left side: category + note
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    t.category,
+                    tr.category,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(t.note ?? ""),
+                  Text(tr.note ?? ""),
                 ],
               ),
+
+              // right side: amount
               Text(
-                "\$${t.amount.toStringAsFixed(2)}",
+                "\$${tr.amount.toStringAsFixed(2)}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ],

@@ -45,7 +45,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get notSet => 'Non défini';
 
   @override
-  String get set => 'le set';
+  String get set => 'Définir';
 
   @override
   String get remaining => 'Restante';
@@ -60,13 +60,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get amountExample => 'Montant (ex. 150,00)';
 
   @override
-  String get save => 'conserver';
+  String get save => 'Enregistrer';
 
   @override
   String get darkMode => 'Mode sombre';
 
   @override
-  String get notifications => 'Notifications';
+  String get notifications => 'Avis';
 
   @override
   String get dailyTips => 'Conseils quotidiens (IA)';
@@ -78,22 +78,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get food => 'Nourriture';
 
   @override
-  String get shopping => 'le shopping';
+  String get shopping => 'Shopping';
 
   @override
-  String get utilities => 'Utilitaires';
+  String get utilities => 'Services publics';
 
   @override
-  String get transportation => 'le transport';
+  String get transportation => 'Transport';
 
   @override
   String get other => 'Autre';
 
   @override
-  String get transactionAdded => 'Transaction ajoutée !';
+  String get transactionAdded => 'Transaction ajoutée !';
 
   @override
-  String get transactionFailed => 'Impossible d\'ajouter la transaction !';
+  String get transactionFailed => 'Impossible d\'ajouter la transaction !';
 
   @override
   String get category => 'Catégorie';
@@ -108,7 +108,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get date => 'Date';
 
   @override
-  String get selectDate => 'Select Date';
+  String get selectDate => 'Sélectionner la date';
 
   @override
   String get note => 'Note';
@@ -117,11 +117,67 @@ class AppLocalizationsFr extends AppLocalizations {
   String get enterAmount => 'Entrez le montant';
 
   @override
-  String get amount => 'Montante';
+  String get amount => 'Montant';
 
   @override
   String get saveTransaction => 'Enregistrer la transaction';
 
   @override
-  String get allTransactions => 'toutes transactions';
+  String get allTransactions => 'Toutes les transactions';
+
+  @override
+  String get currencyConverter => 'Convertisseur de devises';
+
+  @override
+  String get convertCurrency => 'Convertir la devise';
+
+  @override
+  String get from => 'De';
+
+  @override
+  String get to => 'À';
+
+  @override
+  String get swapCurrencies => 'Échanger les devises';
+
+  @override
+  String get convert => 'Convertir';
+
+  @override
+  String get result => 'Résultat';
+
+  @override
+  String get conversionSuccessful => 'Conversion réussie !';
+
+  @override
+  String get conversionFailed =>
+      'Échec de la conversion. Vérifiez votre connexion Internet.';
+
+  @override
+  String get errorEnterAmount => 'Veuillez entrer un montant';
+
+  @override
+  String get errorValidNumber => 'Veuillez entrer un nombre positif valide';
+
+  @override
+  String get about => 'À propos';
+
+  @override
+  String get aboutDescription =>
+      'Convertissez entre différentes devises grâce aux taux de change en direct. Parfait pour gérer les dépenses en voyage !';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get income => 'Revenu';
+
+  @override
+  String get balance => 'Solde';
+
+  @override
+  String get expensesPercent => 'Dépenses % du revenu';
+
+  @override
+  String get balancePercent => 'Solde % du revenu';
 }

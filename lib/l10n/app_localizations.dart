@@ -311,7 +311,7 @@ abstract class AppLocalizations {
   /// No description provided for @enterAmount.
   ///
   /// In en, this message translates to:
-  /// **'Enter Amount'**
+  /// **'Enter amount'**
   String get enterAmount;
 
   /// No description provided for @amount.
@@ -331,6 +331,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All Transactions'**
   String get allTransactions;
+
+  /// No description provided for @currencyConverter.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency Converter'**
+  String get currencyConverter;
+
+  /// No description provided for @convertCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert Currency'**
+  String get convertCurrency;
+
+  /// No description provided for @from.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get from;
+
+  /// No description provided for @to.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get to;
+
+  /// No description provided for @swapCurrencies.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap currencies'**
+  String get swapCurrencies;
+
+  /// No description provided for @convert.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert'**
+  String get convert;
+
+  /// No description provided for @result.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get result;
+
+  /// No description provided for @conversionSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversion successful!'**
+  String get conversionSuccessful;
+
+  /// No description provided for @conversionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversion failed. Check your internet connection.'**
+  String get conversionFailed;
+
+  /// No description provided for @errorEnterAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an amount'**
+  String get errorEnterAmount;
+
+  /// No description provided for @errorValidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid positive number'**
+  String get errorValidNumber;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @aboutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert between different currencies using live exchange rates. Perfect for tracking expenses when traveling!'**
+  String get aboutDescription;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @income.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get income;
+
+  /// No description provided for @balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// No description provided for @expensesPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses % of Income'**
+  String get expensesPercent;
+
+  /// No description provided for @balancePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance % of Income'**
+  String get balancePercent;
 }
 
 class _AppLocalizationsDelegate

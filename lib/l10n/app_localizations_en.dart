@@ -114,7 +114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get note => 'Note';
 
   @override
-  String get enterAmount => 'Enter Amount';
+  String get enterAmount => 'Enter amount';
 
   @override
   String get amount => 'Amount';
@@ -124,4 +124,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allTransactions => 'All Transactions';
+
+  @override
+  String get currencyConverter => 'Currency Converter';
+
+  @override
+  String get convertCurrency => 'Convert Currency';
+
+  @override
+  String get from => 'From';
+
+  @override
+  String get to => 'To';
+
+  @override
+  String get swapCurrencies => 'Swap currencies';
+
+  @override
+  String get convert => 'Convert';
+
+  @override
+  String get result => 'Result';
+
+  @override
+  String get conversionSuccessful => 'Conversion successful!';
+
+  @override
+  String get conversionFailed =>
+      'Conversion failed. Check your internet connection.';
+
+  @override
+  String get errorEnterAmount => 'Please enter an amount';
+
+  @override
+  String get errorValidNumber => 'Please enter a valid positive number';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get aboutDescription =>
+      'Convert between different currencies using live exchange rates. Perfect for tracking expenses when traveling!';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get income => 'Income';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get expensesPercent => 'Expenses % of Income';
+
+  @override
+  String get balancePercent => 'Balance % of Income';
 }

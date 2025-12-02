@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/settings_service.dart';
 import '../services/budget_service.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,65 +20,100 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  // tracks dark mode state
   late bool darkMode;
+
+  // tracks notification toggle
   bool notifications = true;
-  bool tips = true;
-  bool weeklySummary = true;
 
-  double weeklyBudget = 0.0; // new
+  // tracks which language is currently active
+  bool isFrench = false;
 
+  // holds the weekly budget value
+  double weeklyBudget = 0.0;
+
+  // services used to load and save settings
   final SettingsService _service = SettingsService();
-  final BudgetService _budgetService = BudgetService(); // new
+  final BudgetService _budgetService = BudgetService();
 
   @override
   void initState() {
     super.initState();
+
+    // initial toggle state comes from parent widget
     darkMode = widget.isDarkMode;
+
+    // load settings stored in shared preferences
     _loadSettings();
   }
 
-  
-
   Future<void> _loadSettings() async {
+    // get saved notification preference
     notifications = await _service.getNotificationsEnabled();
-    tips = await _service.getTipsEnabled();
-    weeklySummary = await _service.getWeeklySummaryEnabled();
-    weeklyBudget = await _budgetService.getWeeklyBudget(); // new
 
+    // get saved weekly budget value
+    weeklyBudget = await _budgetService.getWeeklyBudget();
+
+    // detect the language currently active in the app
+    final locale = Localizations.localeOf(context).languageCode;
+
+    // this simply checks if french mode is on
+    isFrench = locale == 'fr';
+
+    // refreshes ui after loading values
     setState(() {});
   }
 
-  // helper to edit weekly budget
+  // opens a dialog to edit weekly budget
   Future<void> _editWeeklyBudget() async {
+    final t = AppLocalizations.of(context)!;
+
+    // controller for the text field
     final controller = TextEditingController(
       text: weeklyBudget == 0 ? "" : weeklyBudget.toString(),
     );
 
-    double? result = await showDialog<double>(
+    // build dialog
+    final result = await showDialog<double>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Set Weekly Budget"),
+          // localized title
+          title: Text(t.setWeeklyBudget),
+
+          // numeric input box for weekly budget
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: "Amount (e.g. 150.00)",
+            decoration: InputDecoration(
+              labelText: t.amountExample,
             ),
           ),
+
+          // dialog action buttons
           actions: [
+            // cancel button, closes dialog only
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(t.cancel ?? "Cancel"),
+            ),
+
+            // save button, returns the numeric value
             TextButton(
               onPressed: () {
                 Navigator.pop(
-                    context, double.tryParse(controller.text) ?? 0.0);
+                  context,
+                  double.tryParse(controller.text) ?? 0.0,
+                );
               },
-              child: const Text("Save"),
+              child: Text(t.save),
             ),
           ],
         );
       },
     );
 
+    // update value if user provided one
     if (result != null) {
       await _budgetService.setWeeklyBudget(result);
       setState(() => weeklyBudget = result);
@@ -88,68 +122,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // loads translations for this screen
+    final t = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Settings")),
+      appBar: AppBar(
+        // localized page title
+        title: Text(t.settings),
+      ),
+
       body: ListView(
         children: [
-          // dark mode
+          // dark mode toggle row
           SwitchListTile(
-            title: const Text("Dark Mode"),
+            // localized text
+            title: Text(t.darkMode),
+
+            // current value
             value: darkMode,
+
+            // when switch changes
             onChanged: (value) {
               setState(() => darkMode = value);
+
+              // notify app-level theme change
               widget.onToggleTheme(value);
             },
           ),
 
-          ListTile(
-            title: Text(AppLocalizations.of(context)!.changeLanguage),
-            trailing: const Icon(Icons.language),
-            onTap: widget.onChangeLanguage,
+          // language toggle row
+          SwitchListTile(
+            // localized label
+            title: Text(t.changeLanguage),
+
+            // shows currently active language
+            subtitle: Text(isFrench ? "Français" : "English"),
+
+            // toggle state
+            value: isFrench,
+
+            onChanged: (value) {
+              // update local state
+              setState(() => isFrench = value);
+
+              // tells main.dart to toggle actual locale
+              widget.onChangeLanguage();
+            },
           ),
 
           const Divider(),
 
-          // notifications
+          // notifications toggle row
+          // the label DID NOT show because "notifications" was missing from arb file
           SwitchListTile(
-            title: const Text("Notifications"),
+            // localized notifications label
+            title: Text(t.notifications),
+
+            // current toggle
             value: notifications,
+
+            // when user toggles notifications
             onChanged: (value) {
               setState(() => notifications = value);
+
+              // saves preference through service
               _service.setNotificationsEnabled(value);
             },
           ),
 
-          // ai tips
-          SwitchListTile(
-            title: const Text("Daily Tips (AI)"),
-            value: tips,
-            onChanged: (value) {
-              setState(() => tips = value);
-              _service.setTipsEnabled(value);
-            },
-          ),
-
-          // ai weekly summary
-          SwitchListTile(
-            title: const Text("Weekly Summary (AI)"),
-            value: weeklySummary,
-            onChanged: (value) {
-              setState(() => weeklySummary = value);
-              _service.setWeeklySummaryEnabled(value);
-            },
-          ),
-
           const Divider(),
 
-          // weekly budget section
+          // weekly budget editable row
           ListTile(
-            title: const Text("Weekly Budget"),
+            // localized title
+            title: Text(t.weeklyBudget),
+
+            // shows amount or "not set"
             subtitle: Text(
               weeklyBudget == 0
-                  ? "Not set"
+                  ? t.notSet
                   : "\$${weeklyBudget.toStringAsFixed(2)}",
             ),
+
+            // edit icon
             trailing: IconButton(
               icon: const Icon(Icons.edit),
               onPressed: _editWeeklyBudget,
